@@ -1,1 +1,1 @@
-# traveling-salesman-mpi
+# Traveling Salesman MPI
