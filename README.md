@@ -1,7 +1,7 @@
 # Traveling Salesman MPI
 
 ## Summary
-This project contains a multi-threaded implementation of the traveling salesman problem using the branch and bound method with both static and dynamic execution. During each step, tours are recursively split according to edge inclusion and exclusion. The cost of each new tour is then calculated. When a tour is completed, the priority queue of threads is pruned of unfinished higher cost tours since child tours can only result in a higher cost.
+This project contains a multi-threaded implementation of the traveling salesman problem using the branch and bound method with both static and dynamic execution. During each step, tours are recursively split according to edge inclusion and exclusion. The cost of each new tour is then calculated. When a tour is completed, the thread priority queue is pruned ofhigher cost tours as child tours can only result in a higher cost.
 
 ## Prerequisites
 * Java 9.0
