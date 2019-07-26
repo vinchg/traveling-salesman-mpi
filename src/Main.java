@@ -6,7 +6,6 @@
  * Expected adjacency matrix format from text file is stated below.
  *
  * @author Vincent Cheong
- * Student ID: 004299384
  */
 
 import java.io.File;

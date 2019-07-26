@@ -4,7 +4,6 @@
  * approaches as well as the amount of threads to utilize.
  *
  * @author Vincent Cheong
- * Student ID: 004299384
  */
 
 

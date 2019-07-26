@@ -4,7 +4,6 @@
  * also implements Comparable to allow it to function in a priority queue.
  *
  * @author Vincent Cheong
- * Student ID: 004299384
  */
 
 
