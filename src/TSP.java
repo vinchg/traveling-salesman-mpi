@@ -8,14 +8,10 @@
  */
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.Semaphore;
-import mpi.*;
 
 
 public class TSP implements Runnable {
@@ -35,10 +31,9 @@ public class TSP implements Runnable {
 
     /**
      * Constructor just to automatically initialize constraints for ease of use.
-     *
-     * @param input_dynamic:       True - Dynamic, False - Static
-     * @param input_map:           Adjacency matrix
-     * @param input_verbose:       True - Display steps, False - Don't
+     * @param input_dynamic: True - Dynamic, False - Static
+     * @param input_map: Adjacency matrix
+     * @param input_verbose: True - Display steps, False - Don't
      * @param input_thread_amount: Amount of threads to utilize. Must be greater than 0.
      */
     public TSP(boolean input_dynamic, int[][] input_map, boolean input_verbose, int input_thread_amount) {
@@ -48,7 +43,6 @@ public class TSP implements Runnable {
 
     /**
      * The core TSP constructor that allows either static or dynamic execution (executed only once per problem set).
-     *
      * @param input_constraints: Allow customized input constraints
      */
     public TSP(boolean input_dynamic, int[][] input_map, boolean input_verbose, int input_thread_amount, int[][] input_constraints) {
@@ -65,7 +59,8 @@ public class TSP implements Runnable {
             System.out.println("Best tour map:");
             printMap(lowest_tour.constraints);  // Print the lowest cost tour
             System.out.println("Best tour cost: " + lowest_tour.cost);
-        } else
+        }
+        else
             System.out.println("Error: No tour found.");
     }
 
@@ -76,9 +71,8 @@ public class TSP implements Runnable {
      * Passing the Executor service and the lowest cost tour is necessary to avoid unnecessary computations.
      * We also pass in the c_mutex (console mutex) so that processes aren't stepping on each other's toes
      * when printing to console.
-     *
      * @param input_lowest_tour: Pass lowest tour to improve pruning in child instances
-     * @param input_mutex:       Pass c_mutex to child instances
+     * @param input_mutex: Pass c_mutex to child instances
      */
     public TSP(boolean input_dynamic, int[][] input_map, boolean input_verbose, int input_thread_amount, int[][] input_constraints, Tour input_lowest_tour, Semaphore input_mutex) {
         if (input_thread_amount < 1) {
@@ -108,7 +102,6 @@ public class TSP implements Runnable {
 
     /**
      * Default values - Dynamic execution. Verbose set to false. Utilizes 4 threads.
-     *
      * @param input_map: Adjacency matrix input.
      */
     public TSP(int[][] input_map) {
@@ -119,92 +112,8 @@ public class TSP implements Runnable {
     /**
      * Default Constructor - Empty
      */
-    public TSP() {
-    }
+    public TSP() { }
 
-
-    /**
-     * Startup
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-        MPI.Init(args);
-
-        String file = "class.txt";
-        int[][] adjacency_matrix = parse(file);
-        //int[][] adjacency_matrix = parse(args[0]); // First input should be text name containing adjacency matrix
-        TSP tsp = new TSP();
-        /*String[] s = new String[args.length - 1];
-        for(int i = 1; i < args.length; i++)
-            s[i - 1] = args[i];
-        tsp.run_mpi(adjacency_matrix, args);*/
-        tsp.run_mpi(adjacency_matrix, args);
-    }
-
-
-    public void run_mpi(int[][] input_map, String[] args) throws Exception {
-        try {
-            int me = MPI.COMM_WORLD.Rank();
-            //int size = MPI.COMM_WORLD.Size();
-            if (me == 0) {
-                // Initialize
-                isDynamic = true;
-                map = deepCopy(input_map);
-                verbose = false;
-                constraints1 = initializeConstraints(input_map.length);
-                lowest_tour = new Tour();
-                c_mutex = new Semaphore(1);
-
-
-                // Break down into 2 constraints matrix
-                Tour temp = new Tour(input_map, constraints1, this);
-                temp.run();
-                split(temp);
-
-                // Send constraints to 2 virtual machines
-                MPI.COMM_WORLD.Send(constraints1, 0, constraints1.length, MPI.OBJECT, 1, 1);
-                MPI.COMM_WORLD.Send(constraints2, 0, constraints2.length, MPI.OBJECT, 2, 2);
-
-                // Recieve lowest tours
-                Tour t1 = null;
-                Tour t2 = null;
-                MPI.COMM_WORLD.Recv(t1, 0, 1, MPI.OBJECT, 1, 1);
-                MPI.COMM_WORLD.Recv(t2, 0, 1, MPI.OBJECT, 2, 2);
-
-                if (t1 == null || t2 == null) {
-                    System.out.println("Did not receive tours properly...");
-                    return;
-                }
-                // Make a decision
-                // Look for the lowest cost completed tour among the 2 TSP instances
-                if (t1.cost < t2.cost)
-                    lowest_tour = t1;
-                else
-                    lowest_tour = t2;
-
-                //  Print tour
-                if (lowest_tour.cost != Double.MAX_VALUE) {
-                    System.out.println("Best tour map:");
-                    printMap(lowest_tour.constraints);  // Print the lowest cost tour
-                    System.out.println("Best tour cost: " + lowest_tour.cost);
-                } else
-                    System.out.println("Error: No tour found.");
-            } else {
-                // Receive constraints
-                int[][] input_constraints = null;
-                // Object, offset, count, TYPE, SRC, Tag
-                MPI.COMM_WORLD.Recv(input_constraints, 0, input_map.length, MPI.OBJECT, 0, me);
-                TSP tsp = new TSP(true, input_map, false, 4, input_constraints); // Calculates solution dynamically
-
-                // Send back lowest tour
-                MPI.COMM_WORLD.Send(tsp.lowest_tour, 0, 1, MPI.OBJECT, 0, me);
-            }
-            MPI.Finalize();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * TSP Algorithm Core executed statically (and recursively).
@@ -480,41 +389,5 @@ public class TSP implements Runnable {
             constraints[i][i] = -1;  // Set constraint matrix to -1 on diagonals
         }
         return constraints;
-    }
-
-    /**
-     * Converts a text file into matrix format.
-     * The expected format is that the first 2 integers are the matrix dimensions and each
-     * number following it would represent the next incremental entry into the matrix.
-     * @param file_name
-     * @return
-     * @throws FileNotFoundException
-     */
-    private static int[][] parse(String file_name) throws FileNotFoundException {
-        Scanner s;
-        int[][] matrix;
-        s = new Scanner(new File(file_name));
-
-        int a = 0;
-        int b = 0;
-        // First 2 ints specify the dimensions
-        if (s.hasNext())
-            a = s.nextInt();
-        if (s.hasNext())
-            b = s.nextInt();
-        if (a == 0 || b == 0)
-            return new int[0][0];
-
-        matrix = new int[a][b];
-        for(int i = 0; i < a; i++) {
-            for (int j = 0; j < b; j++) {
-                if (s.hasNext())
-                    matrix[i][j] = s.nextInt();
-                else
-                    break;
-            }
-        }
-        s.close();
-        return matrix;
     }
 }
