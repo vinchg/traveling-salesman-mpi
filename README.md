@@ -12,7 +12,7 @@ The console offers 3 options:
 ![alt text](../media/media/console.PNG?raw=true)
 
 ### Option 1 & Option 2
-**Whether running the static or dynamic implementation of TSP, you will be prompted to input:**
+Whether running the static or dynamic implementation of TSP, you will be prompted to input:
 
 ![alt text](../media/media/1.PNG?raw=true)
 
@@ -23,12 +23,12 @@ The console offers 3 options:
   2. The number of threads to utilize
   3. Whether to display each step (t/f)
 
-**The best tour configuration, cost, and total running time are returned:**
+The best tour configuration, cost, and total running time are returned:
 
 ![alt text](../media/media/2.PNG?raw=true)
 
 ## Results
-**Execution time in seconds when using 16 threads:**
+Execution time in seconds when using 16 threads:
 
 |Size|Static|Dynamic|
 |-|-|-|
